@@ -60,26 +60,17 @@ void send_pattern()
     pixels.setPixelColor(i, pattern[i]);
 }
 
-void setup() 
+void update_brightness()
 {
-  Serial.begin(9600);
-  pixels.begin(); // This initializes the NeoPixel library.
-}
-
-void loop() 
-{
-  reset_pattern();
-  animate_seconds();
-  animate_minute();
-  animate_hour();                                         
-  send_pattern();
-  pixels.show(); // This sends the updated pixel color to the hardware.
-
   int poti = analogRead(A5);
   // convert from 72 -- 1100 measurement range to 1-51 brightness multiplier range
   // but make sure that brightness value is at least 1 
   brightness = poti>72?map(poti, 72, 1100, 1,51):1; 
+}
 
+void update_time()
+{
+  // TIME MOVES FORWARD HERE
   ++second;
 
   if(second > 59)
@@ -97,9 +88,27 @@ void loop()
   }
 
   hour %= 12;
+}
 
-//  Serial.println(brightness);
+void setup() 
+{
+  Serial.begin(9600);
+  pixels.begin(); // This initializes the NeoPixel library.
+}
 
+void loop() 
+{
+  reset_pattern();
+  animate_seconds();
+  animate_minute();
+  animate_hour();                                         
+  send_pattern();
+  pixels.show(); // This sends the updated pixel color to the hardware.
+
+  update_brightness();
+  update_time();
+
+  // Print current time on serial
   Serial.print("Current time is: ");
   Serial.print(hour, DEC); Serial.print(":"); 
   Serial.print(minute, DEC); Serial.print(":");
