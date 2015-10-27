@@ -15,7 +15,7 @@
 // example for more information on possible values.
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS_RING + NUMPIXELS_STICK, PIN, NEO_GRB + NEO_KHZ800);
 
-int delayval = 5; // delay for half a second
+int delayval = 10; // delay for half a second
 
 char colors[] = 
 {5, 0, 0,
@@ -42,6 +42,12 @@ void animate_minute()
     pixels.Color(brightness*colors[3], brightness*colors[4], brightness*colors[5]);
 }
 
+void animate_hour()
+{
+  pattern[hour] += 
+    pixels.Color(brightness*colors[6], brightness*colors[7], brightness*colors[8]);  
+}
+
 void reset_pattern()
 {
   for(int i=0;i<NUMPIXELS_RING+NUMPIXELS_STICK;i++)
@@ -64,7 +70,8 @@ void loop()
 {
   reset_pattern();
   animate_seconds();
-  animate_minute();                                         
+  animate_minute();
+  animate_hour();                                         
   send_pattern();
   pixels.show(); // This sends the updated pixel color to the hardware.
 
