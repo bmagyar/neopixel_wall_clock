@@ -15,7 +15,10 @@
 // example for more information on possible values.
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS_RING + NUMPIXELS_STICK, PIN, NEO_GRB + NEO_KHZ800);
 
-int delayval = 10; // delay for half a second
+int delayval = 500; // delay for half a second
+const int buttonPin = 7;
+int lastButtonState = 0;
+int actButtonState = 0;
 
 char colors[] = 
 {5, 0, 0,
@@ -28,7 +31,34 @@ int second = 0;
 int minute = 0;
 int hour = 0;
 
+enum State
+{
+  STATE_NORMAL = 0,
+  STATE_SET_MINUTE = 1,
+  STATE_SET_HOUR = 2
+} current_state = STATE_NORMAL;
+
+
 uint32_t pattern[NUMPIXELS_RING+NUMPIXELS_STICK];
+
+void printState()
+{
+  switch(current_state)
+  {
+    case STATE_NORMAL:
+      Serial.println("State is NORMAL");
+      break;
+    case STATE_SET_MINUTE:
+      Serial.println("State is SET MINUTE");
+      break;
+    case STATE_SET_HOUR:
+      Serial.println("State is SET HOUR");
+      break;
+    default:
+      Serial.println("Unknown state, call the police!");
+      break;
+  }
+}
 
 void animate_seconds()
 {
@@ -68,6 +98,20 @@ void update_brightness()
   brightness = poti>72?map(poti, 72, 1100, 1,51):1; 
 }
 
+void set_minute()
+{
+  int poti = analogRead(A0);
+  // convert from 72 -- 1100 measurement range to 1-51 brightness multiplier range
+  // but make sure that brightness value is at least 1 
+  minute = poti>72?map(poti, 72, 1100, 0,59):0; 
+}
+
+void set_hour()
+{
+  int poti = analogRead(A0);
+  hour = poti>72?map(poti, 72, 1100, 0,11):0; 
+}
+
 void update_time()
 {
   // TIME MOVES FORWARD HERE
@@ -92,12 +136,14 @@ void update_time()
 
 void setup() 
 {
+  pinMode(buttonPin, INPUT);
   Serial.begin(9600);
   pixels.begin(); // This initializes the NeoPixel library.
 }
 
 void loop() 
 {
+  update_brightness();
   reset_pattern();
   animate_seconds();
   animate_minute();
@@ -105,8 +151,28 @@ void loop()
   send_pattern();
   pixels.show(); // This sends the updated pixel color to the hardware.
 
-  update_brightness();
-  update_time();
+  actButtonState = digitalRead(buttonPin);
+
+  if(lastButtonState == 0 && actButtonState != 0)
+  {
+      Serial.println("Button pressed");
+      current_state = (State)(((int)current_state+1)%3);
+      printState();
+  }
+  
+  switch(current_state)
+  {
+    case STATE_NORMAL:
+      update_time();
+      break;
+    case STATE_SET_MINUTE:
+      set_minute();
+      break;
+    case STATE_SET_HOUR:
+      set_hour();
+      break;
+  }
+
 
   // Print current time on serial
   Serial.print("Current time is: ");
@@ -114,5 +180,6 @@ void loop()
   Serial.print(minute, DEC); Serial.print(":");
   Serial.println(second, DEC);
 
+  lastButtonState = actButtonState;
   delay(delayval);
 }
