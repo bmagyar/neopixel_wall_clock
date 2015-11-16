@@ -23,8 +23,8 @@ int actButtonState = 0;
 char colors[] = 
 {5, 0, 0,
  0, 5, 0,
- 0, 0, 5,
- 5, 5, 5 };
+ 0, 0, 2,
+ 5, 5, 2 };
 
 int brightness = 1;
 int second = 0;
