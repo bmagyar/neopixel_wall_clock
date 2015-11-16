@@ -92,15 +92,17 @@ void send_pattern()
 
 void update_brightness()
 {
-  int poti = analogRead(A5);
-  // convert from 72 -- 1100 measurement range to 1-51 brightness multiplier range
+  int poti = analogRead(A0);
+  Serial.print("Photoresistor val: ");
+  Serial.println(poti, DEC);
+  // convert from photores measurement range to 1-51 brightness multiplier range
   // but make sure that brightness value is at least 1 
-  brightness = poti>72?map(poti, 72, 1100, 1,51):1; 
+  brightness = poti>500?map(poti, 500, 1023, 1,35):1; 
 }
 
 void set_minute()
 {
-  int poti = analogRead(A0);
+  int poti = analogRead(A5);
   // convert from 72 -- 1100 measurement range to 1-51 brightness multiplier range
   // but make sure that brightness value is at least 1 
   minute = poti>72?map(poti, 72, 1100, 0,59):0; 
@@ -108,7 +110,7 @@ void set_minute()
 
 void set_hour()
 {
-  int poti = analogRead(A0);
+  int poti = analogRead(A5);
   hour = poti>72?map(poti, 72, 1100, 0,11):0; 
 }
 
