@@ -20,7 +20,7 @@ ISR(WDT_vect) { Sleepy::watchdogEvent(); } // Setup the watchdog
 // example for more information on possible values.
 Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS_RING + NUMPIXELS_STICK, PIN, NEO_GRB + NEO_KHZ800);
 
-int delayval = 500; // delay for half a second
+int delayval = 1000; // delay for half a second
 const int buttonPin = 7;
 int lastButtonState = 0;
 int actButtonState = 0;
