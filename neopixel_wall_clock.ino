@@ -3,6 +3,11 @@
   #include <avr/power.h>
 #endif
 
+#include <JeeLib.h> // Low power functions library
+ISR(WDT_vect) { Sleepy::watchdogEvent(); } // Setup the watchdog
+
+//#define USE_SERIAL
+
 // Which pin on the Arduino is connected to the NeoPixels?
 #define PIN            3
 
@@ -43,6 +48,7 @@ uint32_t pattern[NUMPIXELS_RING+NUMPIXELS_STICK];
 
 void printState()
 {
+#ifdef USE_SERIAL
   switch(current_state)
   {
     case STATE_NORMAL:
@@ -58,6 +64,7 @@ void printState()
       Serial.println("Unknown state, call the police!");
       break;
   }
+#endif
 }
 
 void animate_seconds()
@@ -93,8 +100,10 @@ void send_pattern()
 void update_brightness()
 {
   int poti = analogRead(A0);
+#ifdef USE_SERIAL
   Serial.print("Photoresistor val: ");
   Serial.println(poti, DEC);
+#endif
   // convert from photores measurement range to 1-51 brightness multiplier range
   // but make sure that brightness value is at least 1 
   brightness = poti>500?map(poti, 500, 1023, 1,35):1; 
@@ -123,8 +132,10 @@ void update_time()
   {
     ++minute;
     second %= 60;
+#ifdef USE_SERIAL
     Serial.print("SECOND IS 60, minute changed to ");
     Serial.println(minute);
+#endif
   }
 
   if(minute == 60)
@@ -139,7 +150,9 @@ void update_time()
 void setup() 
 {
   pinMode(buttonPin, INPUT);
+#ifdef USE_SERIAL
   Serial.begin(9600);
+#endif
   pixels.begin(); // This initializes the NeoPixel library.
 }
 
@@ -157,7 +170,9 @@ void loop()
 
   if(lastButtonState == 0 && actButtonState != 0)
   {
+#ifdef USE_SERIAL
       Serial.println("Button pressed");
+#endif
       current_state = (State)(((int)current_state+1)%3);
       printState();
   }
@@ -175,13 +190,14 @@ void loop()
       break;
   }
 
-
+#ifdef USE_SERIAL
   // Print current time on serial
   Serial.print("Current time is: ");
   Serial.print(hour, DEC); Serial.print(":"); 
   Serial.print(minute, DEC); Serial.print(":");
   Serial.println(second, DEC);
+#endif
 
   lastButtonState = actButtonState;
-  delay(delayval);
+  Sleepy::loseSomeTime(delayval);
 }
